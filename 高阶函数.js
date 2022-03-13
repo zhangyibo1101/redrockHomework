@@ -72,39 +72,46 @@ inp.addEventListener('keyup', debounce(output, 1000));
 //AOP
 function func() {
     console.log(2);
+    return 2;
 }
-
 //实现func.before()以及func.after()
-
-func.before = function (fn) {
-    fn();
-    this();
-    return this;
+// 注：给函数原型添加属性
+Function.prototype.before = function (fn) {
+    let _this = this;
+    return function () {
+        fn.apply(_this, arguments);
+        let res = _this.apply(_this, arguments)
+        return res;
+    }
 }
-func.after = function (fn) {
-    return function(){
-        fn();
+Function.prototype.after = function (fn) {
+    let _this = this;
+    return function () {
+        let res = _this.apply(_this, arguments);
+        fn.apply(_this, arguments);
+        return res;
     }
 }
 func = func.before((a = 1) => {
     console.log(a)
-}).after((b=3) => {
+}).after((b = 3) => {
     console.log(b);
 })
 func();
-// 没理解切片化意义何在???????
-
+func();
+console.log(func());
 // 手写Array.prototype.map
-Array.prototype.mymap=function(fn){
-    let arr=[];
-    let _this=this;
-    for(let i=0;i<this.length;i++){
-        arr.push(fn(_this[i],i))
+Array.prototype.mymap = function (fn) {
+    let arr = [];
+    let _this = this;
+    for (let i = 0; i < this.length; i++) {
+        arr.push(fn(_this[i], i))
     }
     return arr;
 }
-function fn(item,index){
-    return item*index;
+
+function fn(item, index) {
+    return item * index;
 }
-let arr=[1,2,3];
+let arr = [1, 2, 3];
 console.log(arr.mymap(fn));
